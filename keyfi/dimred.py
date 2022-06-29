@@ -37,14 +37,18 @@ def import_vtk_data(path: str = '') -> pd.DataFrame:
     # Make a dataframe from only scalar mesh arrays (i.e. exclude vectors)
     var_names = [name for name in mesh.array_names if name not in vector_names]
     var_arrays = np.transpose([mesh.get_array(var_name) for var_name in var_names])
-    df = pd.DataFrame(var_arrays, columns=var_names)
+
+    if var_names:
+        df = pd.DataFrame(var_arrays, columns=var_names)
+    else:
+        df = pd.DataFrame(index=range(mesh.n_points))
 
     # Add the vectors back with one row per component
     for vector_name in vector_names:
         # Get dimension of data e.g., 1D or 2D
         data_dim = mesh.get_array(vector_name).ndim
 
-        if data_dim == 1: 
+        if data_dim == 1:
             pass
         else:
             # Get dimension (number of columns) of typical vector
@@ -65,9 +69,9 @@ def export_vtk_data(mesh: Type, path: str = '', cluster_labels: np.ndarray = Non
     mesh.save(path)
 
 def clean_data(data: pd.DataFrame, dim: int = 2, vars_to_drop: Sequence[str] = None, vars_to_keep: Sequence[str] = None) -> pd.DataFrame:
-    '''    
+    '''
     Removes ghost cells (if present) and other data columns that
-    are not relevant for the dimensionality reduction (i.e. spatial 
+    are not relevant for the dimensionality reduction (i.e. spatial
     coordinates) from the original data.
     '''
     if dim not in [2, 3]:
@@ -101,7 +105,7 @@ def clean_data(data: pd.DataFrame, dim: int = 2, vars_to_drop: Sequence[str] = N
 
 
 def scale_data(data: pd.DataFrame) -> np.ndarray:
-    '''    
+    '''
     Scales input data based on sklearn standard scaler.
     '''
     scaled_data = StandardScaler().fit_transform(data)
@@ -110,9 +114,9 @@ def scale_data(data: pd.DataFrame) -> np.ndarray:
 
 def embed_data(data: pd.DataFrame, algorithm, scale: bool = True, **params) -> Tuple[np.ndarray, Type]:
     '''
-    Applies either UMAP or t-SNE dimensionality reduction algorithm 
+    Applies either UMAP or t-SNE dimensionality reduction algorithm
     to the input data (with optional scaling) and returns the
-    embedding array. Also accepts specific and optional algorithm 
+    embedding array. Also accepts specific and optional algorithm
     parameters.
     '''
     algorithms = [UMAP, TSNE]
