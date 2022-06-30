@@ -1,3 +1,5 @@
+import os
+
 import warnings
 import umap.plot
 import numpy as np
@@ -81,12 +83,12 @@ def _set_cluster_member_colors(clusterer: HDBSCAN, soft: bool = True):
 
 def _save_fig(save: bool = False, figname: str = None, figpath: str = None):
     if save:
-        plt.savefig(figpath+figname+'.png')
+        plt.savefig(os.path.join(figpath, figname+'.png'))
     else:
         plt.show()
 
 
-def plot_embedding(embedding: np.ndarray, data: pd.DataFrame = pd.DataFrame(), scale_points: bool = True, cmap_var: str = None, cmap_minmax: Sequence[Num] = list(), save: bool = False, figname: str = None, figpath: str = None):
+def plot_embedding(embedding: np.ndarray, data: pd.DataFrame = pd.DataFrame(), scale_points: bool = True, cmap_var: str = None, cmap_minmax: Sequence[Num] = list(), title: str = None, save: bool = False, figname: str = None, figpath: str = None):
     '''
     Plots input embedding as a scatter plot. Optionally, a variable
     with an optional range can be supplied for use in the colormap.
@@ -116,7 +118,12 @@ def plot_embedding(embedding: np.ndarray, data: pd.DataFrame = pd.DataFrame(), s
         plt.scatter(*embedding.T, s=point_size)
 
     _remove_axes(ax)
+
+    if title:
+        ax.set_title(title)
     _save_fig(save, figname, figpath)
+
+    plt.close(fig)
 
 
 def plot_clustering(embedding: np.ndarray, cluster_labels: np.ndarray, scale_points: bool = True, save: bool = False, figname: str = None, figpath: str = None):
@@ -141,7 +148,7 @@ def plot_clustering(embedding: np.ndarray, cluster_labels: np.ndarray, scale_poi
         _set_legend(labels=cluster_labels, cmap=cmap, ax=ax)
     else:
         _set_colorbar(label='Clusters', ticks=np.arange(n_clusters))
-    
+
     _remove_axes(ax)
     _save_fig(save, figname, figpath)
 
@@ -180,5 +187,5 @@ def plot_cluster_membership(embedding: np.ndarray, clusterer: HDBSCAN, scale_poi
 
 def umap_plot(mapper: Type, save: bool = False, figname: str = None, figpath: str = None, **kwargs):
     umap.plot.points(mapper, **kwargs)
-    
+
     _save_fig(save, figname, figpath)
