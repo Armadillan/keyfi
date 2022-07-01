@@ -104,15 +104,48 @@ def clean_data(data: pd.DataFrame, dim: int = 2, vars_to_drop: Sequence[str] = N
     return cleaned_data
 
 
-def scale_data(data: pd.DataFrame) -> np.ndarray:
+def scale_data(data: pd.DataFrame, scaler: str = 'StandardScaler', feature: str = 'All') -> np.ndarray:
     '''
-    Scales input data based on sklearn standard scaler.
+    Scales input data based on several scaler with default being StandardScaler.
     '''
-    scaled_data = StandardScaler().fit_transform(data)
+
+    scalers = [MinMaxScaler.__name__, StandardScaler.__name__, MaxAbsScaler.__name__]
+    if scaler not in scalers:
+        raise ValueError(
+            'invalid scaler. Expected one of: %s' % scalers)
+
+    if feature == 'All':
+        print ('Apply scaling for all features.')
+        if scaler == 'MinMaxScaler':
+            scaled_data = MinMaxScaler().fit_transform(data)
+
+        elif scaler == 'StandardScaler':
+            scaled_data = StandardScaler().fit_transform(data)
+
+        elif scaler == 'MaxAbsScaler':
+            scaled_data = MaxAbsScaler().fit_transform(data)
+    else: #only support single str feature at the moment
+
+        if feature not in data.columns:
+            raise ValueError(
+                'invalid feature. Expected one of: %s' % data.columns
+                )
+        print ('Apply scaling for single feature {}'.format(feature))
+        scaled_data = data.copy()
+
+        if scaler == 'MinMaxScaler':
+            scaled_data[feature] = MinMaxScaler().fit_transform(data[feature].values.reshape(-1,1))
+
+        elif scaler == 'StandardScaler':
+            scaled_data[feature] = StandardScaler().fit_transform(data[feature].values.reshape(-1,1))
+
+        elif scaler == 'MaxAbsScaler':
+            scaled_data[feature] = MaxAbsScaler().fit_transform(data[feature].values.reshape(-1,1))
+
     return scaled_data
 
 
-def embed_data(data: pd.DataFrame, algorithm, scale: bool = True, **params) -> Tuple[np.ndarray, Type]:
+def embed_data(data: pd.DataFrame, algorithm, scale: bool = True, scaler: str = 'StandardScaler', feature: str = 'All', **params) -> Tuple[np.ndarray, Type]:
     '''
     Applies either UMAP or t-SNE dimensionality reduction algorithm
     to the input data (with optional scaling) and returns the
@@ -125,7 +158,7 @@ def embed_data(data: pd.DataFrame, algorithm, scale: bool = True, **params) -> T
             'invalid algorithm. Expected one of: %s' % algorithms)
 
     if scale:
-        data = scale_data(data)
+        data = scale_data(data, scaler, feature)
 
     reducer = algorithm(**params)
 
