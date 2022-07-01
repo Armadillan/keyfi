@@ -138,7 +138,7 @@ def _save_fig(save: bool = False, figname: str = None, figpath: str = None):
         plt.savefig(os.path.join(figpath, figname+'.png'))
     else:
         plt.show()
-        plt.close(fig)
+        plt.close()
 
 
 
@@ -147,6 +147,7 @@ def plot_embedding(
     scale_points: bool = True, label: str = None, title: str = None,
     cmap_var: str = None, cmap_minmax: Sequence[Num] = list(),
     save: bool = False, figname: str = None, figpath: str = None,
+    view: tuple = (-140, 60)
     ):
     '''
     Plots input embedding as a scatter plot. Optionally, a variable
@@ -161,7 +162,7 @@ def plot_embedding(
             'too many values to unpack. Expected 2')
 
     dim = embedding.shape[1]
-    fig, ax = _set_plot_settings(dim)
+    fig, ax = _set_plot_settings(dim, view=view)
 
     if scale_points:
         point_size = _set_point_size(embedding)
