@@ -138,10 +138,15 @@ def scale_data(
     for features, scaler in zip(features, scalers):
         scaler = scaler()
 
-        if isinstance(features, str) or len(features) == 1:
+        if isinstance(features, str):
             # fit_transform is not used because scalers have to implement fit
             # and transform anyway for the other case, so requiring
             # fit_transform is unnecessary
+            values = data[features].values.reshape(-1, 1)
+            scaler.fit(values)
+            scaled_data[features] = scaler.transform(values)
+        elif len(features) == 1:
+            #for compatibility with uples, lists etc
             values = data[features[0]].values.reshape(-1, 1)
             scaler.fit(values)
             scaled_data[features[0]] = scaler.transform(values)
