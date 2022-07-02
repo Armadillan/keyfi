@@ -111,11 +111,11 @@ def scale_data(
     ) -> pd.DataFrame():
     """
     data is entire dataframe with data to be scaled.
-    features should be one or more sequences of one or more columns in the
+    features should be a sequence of columns and sequences of columns in the
     dataframe which are to be scaled.
     The same scaler object will be applied to each column in each
     value in features.
-    scalers has to be the same length as features. the nth sequence in
+    scalers has to be the same length as features. the nth sequence or column in
     features will be scaled using the nth scaler.
     Each element in scalers has to be a callable object which returns the
     scaler object itself.
@@ -138,13 +138,10 @@ def scale_data(
     for features, scaler in zip(features, scalers):
         scaler = scaler()
 
-        #common mistake
-        if isinstance(features, str):
-            raise ValueError(
-                f"single features should be contained in a sequence of length one, loose feature: {features}"
-                )
-
-        if len(features) == 1:
+        if isinstance(features, str) or len(features) == 1:
+            # fit_transform is not used because scalers have to implement fit
+            # and transform anyway for the other case, so requiring
+            # fit_transform is unnecessary
             values = data[features[0]].values.reshape(-1, 1)
             scaler.fit(values)
             scaled_data[features[0]] = scaler.transform(values)
