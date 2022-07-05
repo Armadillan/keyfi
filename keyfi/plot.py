@@ -135,10 +135,10 @@ def _set_cluster_member_colors(clusterer: HDBSCAN, soft: bool = True):
 
 def _save_fig(save: bool = False, figname: str = None, figpath: str = None):
     if save:
-        plt.savefig(os.path.join(figpath, figname+'.png'))
+        plt.savefig(os.path.join(figpath, figname+'.png'), bbox_inches='tight')
     else:
         plt.show()
-        plt.close()
+    plt.close()
 
 
 
@@ -160,6 +160,9 @@ def plot_embedding(
     if len(cmap_minmax) != 2 and cmap_minmax:
         raise ValueError(
             'too many values to unpack. Expected 2')
+
+    if not label:
+        label = cmap_var
 
     dim = embedding.shape[1]
     fig, ax = _set_plot_settings(dim, view=view)
