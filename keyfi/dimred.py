@@ -146,7 +146,7 @@ def scale_data(
             scaler.fit(values)
             scaled_data[features] = scaler.transform(values)
         elif len(features) == 1:
-            #for compatibility with uples, lists etc
+            #for compatibility with tuples, lists etc
             values = data[features[0]].values.reshape(-1, 1)
             scaler.fit(values)
             scaled_data[features[0]] = scaler.transform(values)

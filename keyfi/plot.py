@@ -103,7 +103,6 @@ def _remove_axes(ax: plt.Subplot, dim: int = 2):
     ax.set(yticklabels=[], xticklabels=[])
     if dim == 3:
         ax.set(yticklabels=[], xticklabels=[], zticklabels=[])
-    plt.tight_layout()
 
 
 def _set_point_size(points: np.ndarray) -> np.ndarray:
@@ -134,6 +133,7 @@ def _set_cluster_member_colors(clusterer: HDBSCAN, soft: bool = True):
 
 
 def _save_fig(save: bool = False, figname: str = None, figpath: str = None):
+    plt.tight_layout()
     if save:
         plt.savefig(os.path.join(figpath, figname+'.png'), bbox_inches='tight')
     else:
@@ -147,7 +147,7 @@ def plot_embedding(
     scale_points: bool = True, label: str = None, title: str = None,
     cmap_var: str = None, cmap_minmax: Sequence[Num] = list(),
     save: bool = False, figname: str = None, figpath: str = None,
-    view: tuple = (-140, 60)
+    view: tuple = (-140, 60), figsize: tuple = None
     ):
     '''
     Plots input embedding as a scatter plot. Optionally, a variable
@@ -165,7 +165,7 @@ def plot_embedding(
         label = cmap_var
 
     dim = embedding.shape[1]
-    fig, ax = _set_plot_settings(dim, view=view)
+    fig, ax = _set_plot_settings(dim, view=view, figsize=figsize)
 
     if scale_points:
         point_size = _set_point_size(embedding)
