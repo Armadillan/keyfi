@@ -123,7 +123,7 @@ def scale_data(
     You can for example pass sklearn.preprocessing.StandardScaler
     but NOT sklearn.preprocessing.StandardScaler().
     Not sure why I made this choice, but that is how it is now.
-    If features are ommitted from the dict they will not be scaled,
+    If features are ommitted from they will not be scaled,
     but still returned.
     """
 
