@@ -101,6 +101,7 @@ def _set_legend(labels: np.ndarray, cmap: colors.ListedColormap, ax: plt.Subplot
 
 def _remove_axes(ax: plt.Subplot, dim: int = 2):
     ax.set(yticklabels=[], xticklabels=[])
+    ax.tick_params(left=False, bottom=False)
     if dim == 3:
         ax.set(yticklabels=[], xticklabels=[], zticklabels=[])
 
