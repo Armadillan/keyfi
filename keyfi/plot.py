@@ -134,9 +134,10 @@ def _set_cluster_member_colors(clusterer: HDBSCAN, soft: bool = True):
 
 
 def _save_fig(save: bool = False, figname: str = None, figpath: str = None):
+
     plt.tight_layout()
     if save:
-        plt.savefig(os.path.join(figpath, figname+'.png'), bbox_inches='tight')
+        plt.savefig(os.path.join(figpath, figname), bbox_inches='tight')
     else:
         plt.show()
     plt.close()
@@ -145,7 +146,7 @@ def _save_fig(save: bool = False, figname: str = None, figpath: str = None):
 
 def plot_embedding(
     embedding: np.ndarray, data: pd.DataFrame = pd.DataFrame(),
-    scale_points: bool = True, label: str = None, title: str = None,
+    scale_points: int = 1, label: str = None, title: str = None,
     cmap_var: str = None, cmap_minmax: Sequence[Num] = list(),
     save: bool = False, figname: str = None, figpath: str = None,
     view: tuple = (-140, 60), figsize: tuple = None
@@ -169,7 +170,7 @@ def plot_embedding(
     fig, ax = _set_plot_settings(dim, view=view, figsize=figsize)
 
     if scale_points:
-        point_size = _set_point_size(embedding)
+        point_size = scale_points * _set_point_size(embedding)
     else:
         point_size = None
 
