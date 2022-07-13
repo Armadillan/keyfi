@@ -39,7 +39,7 @@ def fix_yticks(labels):
     return new_yticks
 
 
-def plot_cluster_mi_scores(cluster_mi_scores):
+def plot_cluster_mi_scores(cluster_mi_scores, save, figpath, figname):
 
     fig, ax = plt.subplots(figsize=[7, 7])
     palette = sns.color_palette('husl', 2)
@@ -52,10 +52,18 @@ def plot_cluster_mi_scores(cluster_mi_scores):
     plt.yticks(locs, new_yticks, fontsize=17)
     plt.xticks(fontsize=17)
     plt.legend(fontsize=17)
-    plt.show()
+    plt.tight_layout()
+    if save:
+        plt.savefig(os.path.join(figpath, figname), bbox_inches='tight')
+    else:
+        plt.show()
 
 
-def get_cluster_mi_scores(data, clusterer, embedding, cluster_num: int = 0, scale: bool = False, flag_print: bool = True, flag_plot: bool = True):
+def get_cluster_mi_scores(
+    data, clusterer, embedding, cluster_num: int = 0,
+    scale: bool = False, flag_print: bool = True,
+    flag_plot: bool = True, save=False, figpath="", figname="",
+    ):
     clustered_data = data.copy()
     clustered_data['clusters'] = clusterer.labels_
     clustered_data[['Var_X', 'Var_Y']] = embedding
@@ -88,6 +96,6 @@ def get_cluster_mi_scores(data, clusterer, embedding, cluster_num: int = 0, scal
         print('\n')
 
     if flag_plot:
-        plot_cluster_mi_scores(cluster_mi_scores)
+        plot_cluster_mi_scores(cluster_mi_scores, save, figpath, figname)
 
     return cluster_mi_scores
