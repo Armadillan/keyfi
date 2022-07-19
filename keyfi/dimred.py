@@ -5,7 +5,7 @@ import pyvista as pv
 from umap import UMAP
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
-from typing import Sequence, Tuple, Type
+from typing import Sequence, Tuple, Type, Callable
 
 
 def import_csv_data(path: str = '') -> pd.DataFrame:
@@ -104,61 +104,75 @@ def clean_data(data: pd.DataFrame, dim: int = 2, vars_to_drop: Sequence[str] = N
     return cleaned_data
 
 
-def scale_data(data: pd.DataFrame, scaler: str = 'StandardScaler', feature: str = 'All') -> np.ndarray:
-    '''
-    Scales input data based on several scaler with default being StandardScaler.
-    '''
+def scale_data(
+    data: pd.DataFrame,
+    features: [[str, ...], ...],
+    scalers: [Callable, ...]
+    ) -> pd.DataFrame():
+    """
+    data is entire dataframe with data to be scaled.
+    features should be a sequence of columns and sequences of columns in the
+    dataframe which are to be scaled.
+    The same scaler object will be applied to each column in each
+    value in features.
+    scalers has to be the same length as features. the nth sequence or column in
+    features will be scaled using the nth scaler.
+    Each element in scalers has to be a callable object which returns the
+    scaler object itself.
+    Scalers must have .fit(data) and .transform(data) methods.
+    You can for example pass sklearn.preprocessing.StandardScaler
+    but NOT sklearn.preprocessing.StandardScaler().
+    Not sure why I made this choice, but that is how it is now.
+    If features are ommitted from they will not be scaled,
+    but still returned.
+    """
 
-    scalers = [MinMaxScaler.__name__, StandardScaler.__name__, MaxAbsScaler.__name__]
-    if scaler not in scalers:
-        raise ValueError(
-            'invalid scaler. Expected one of: %s' % scalers)
+    if len(features) != len(scalers):
+        raise ValueError(("scale_data() arguments features and scalers must be of equal length"))
 
-    if feature == 'All':
-        print ('Apply scaling for all features.')
-        if scaler == 'MinMaxScaler':
-            scaled_data = MinMaxScaler().fit_transform(data)
+    scaled_data = data.copy()
 
-        elif scaler == 'StandardScaler':
-            scaled_data = StandardScaler().fit_transform(data)
+    #for backwards compatibility with python 3.8.8 zip(strict=True) is not used
+    #instead ValueError is raised above if features and scalers are of
+    #unequal length
+    for features, scaler in zip(features, scalers):
+        scaler = scaler()
 
-        elif scaler == 'MaxAbsScaler':
-            scaled_data = MaxAbsScaler().fit_transform(data)
-    else: #only support single str feature at the moment
+        if isinstance(features, str):
+            # fit_transform is not used because scalers have to implement fit
+            # and transform anyway for the other case, so requiring
+            # fit_transform is unnecessary
+            values = data[features].values.reshape(-1, 1)
+            scaler.fit(values)
+            scaled_data[features] = scaler.transform(values)
+        elif len(features) == 1:
+            #for compatibility with tuples, lists etc
+            values = data[features[0]].values.reshape(-1, 1)
+            scaler.fit(values)
+            scaled_data[features[0]] = scaler.transform(values)
+        else:
+            #compatibility with tuples, lists etc
+            features = [feature for feature in features]
 
-        if feature not in data.columns:
-            raise ValueError(
-                'invalid feature. Expected one of: %s' % data.columns
-                )
-        print ('Apply scaling for single feature {}'.format(feature))
-        scaled_data = data.copy()
-
-        if scaler == 'MinMaxScaler':
-            scaled_data[feature] = MinMaxScaler().fit_transform(data[feature].values.reshape(-1,1))
-
-        elif scaler == 'StandardScaler':
-            scaled_data[feature] = StandardScaler().fit_transform(data[feature].values.reshape(-1,1))
-
-        elif scaler == 'MaxAbsScaler':
-            scaled_data[feature] = MaxAbsScaler().fit_transform(data[feature].values.reshape(-1,1))
+            scaler.fit(data[features].values.reshape(-1, 1))
+            for feature in features:
+                scaled_data[feature] = scaler.transform(
+                    data[feature].values.reshape(-1,1)
+                    )
 
     return scaled_data
 
-
-def embed_data(data: pd.DataFrame, algorithm, scale: bool = True, scaler: str = 'StandardScaler', feature: str = 'All', **params) -> Tuple[np.ndarray, Type]:
+def embed_data(data: pd.DataFrame, algorithm,  **params) -> Tuple[np.ndarray, Type]:
     '''
     Applies either UMAP or t-SNE dimensionality reduction algorithm
-    to the input data (with optional scaling) and returns the
-    embedding array. Also accepts specific and optional algorithm
-    parameters.
+    to the input data and returns the embedding array.
+    Also accepts specific and optional algorithm parameters.
     '''
     algorithms = [UMAP, TSNE]
     if algorithm not in algorithms:
         raise ValueError(
             'invalid algorithm. Expected one of: %s' % algorithms)
 
-    if scale:
-        data = scale_data(data, scaler, feature)
 
     reducer = algorithm(**params)
 

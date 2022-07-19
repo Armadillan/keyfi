@@ -101,9 +101,9 @@ def _set_legend(labels: np.ndarray, cmap: colors.ListedColormap, ax: plt.Subplot
 
 def _remove_axes(ax: plt.Subplot, dim: int = 2):
     ax.set(yticklabels=[], xticklabels=[])
+    ax.tick_params(left=False, bottom=False)
     if dim == 3:
         ax.set(yticklabels=[], xticklabels=[], zticklabels=[])
-    plt.tight_layout()
 
 
 def _set_point_size(points: np.ndarray) -> np.ndarray:
@@ -134,20 +134,22 @@ def _set_cluster_member_colors(clusterer: HDBSCAN, soft: bool = True):
 
 
 def _save_fig(save: bool = False, figname: str = None, figpath: str = None):
+
+    plt.tight_layout()
     if save:
-        plt.savefig(os.path.join(figpath, figname+'.png'))
+        plt.savefig(os.path.join(figpath, figname), bbox_inches='tight')
     else:
         plt.show()
-        plt.close()
+    plt.close()
 
 
 
 def plot_embedding(
     embedding: np.ndarray, data: pd.DataFrame = pd.DataFrame(),
-    scale_points: bool = True, label: str = None, title: str = None,
+    scale_points: int = 1, label: str = None, title: str = None,
     cmap_var: str = None, cmap_minmax: Sequence[Num] = list(),
     save: bool = False, figname: str = None, figpath: str = None,
-    view: tuple = (-140, 60)
+    view: tuple = (-140, 60), figsize: tuple = None
     ):
     '''
     Plots input embedding as a scatter plot. Optionally, a variable
@@ -161,11 +163,14 @@ def plot_embedding(
         raise ValueError(
             'too many values to unpack. Expected 2')
 
+    if not label:
+        label = cmap_var
+
     dim = embedding.shape[1]
-    fig, ax = _set_plot_settings(dim, view=view)
+    fig, ax = _set_plot_settings(dim, view=view, figsize=figsize)
 
     if scale_points:
-        point_size = _set_point_size(embedding)
+        point_size = scale_points * _set_point_size(embedding)
     else:
         point_size = None
 
