@@ -162,17 +162,23 @@ def scale_data(
 
     return scaled_data
 
-def embed_data(data: pd.DataFrame, algorithm,  **params) -> Tuple[np.ndarray, Type]:
+def embed_data(data: pd.DataFrame, algorithm, scale: bool = True, **params) -> Tuple[np.ndarray, Type]:
     '''
     Applies either UMAP or t-SNE dimensionality reduction algorithm
     to the input data and returns the embedding array.
     Also accepts specific and optional algorithm parameters.
+
+    The scale parameter exists for backwards compatibility,
+    the scale_data function can be used before embed_data with
+    scale set to False for more options.
     '''
     algorithms = [UMAP, TSNE]
     if algorithm not in algorithms:
         raise ValueError(
             'invalid algorithm. Expected one of: %s' % algorithms)
 
+    if scale:
+        data = StandardScaler().fit_transform(data)
 
     reducer = algorithm(**params)
 
